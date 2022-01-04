@@ -1,0 +1,1518 @@
+
+**********************************************************************************************************************
+index.cshtml
+-------------------
+@model IEnumerable<InternalSolution.Models.BookVehicle>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<br />
+<div class="container">
+    @using (Html.BeginForm("Index", "BookVehicles", FormMethod.Get))
+    {
+    <div class="row">
+        <div class="col-md-3">
+            <input type="number" name="amt" placeholder="Search By Amount" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="name" placeholder="Search By Customer" class="form-control" />
+        </div>       
+        <div class="col-md-3">
+            <input type="submit" value="Search" class="btn btn-primary" />
+        </div>
+    </div>
+      
+    }
+</div>
+<br />
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Amount)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Date)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Cid)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Vid)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Amount)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Date)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.C.Cname)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.V.Vname)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Bid">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Bid">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Bid">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+------------------------------
+BookVehivalController.cs
+------------------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using InternalSolution.Models;
+
+namespace InternalSolution.Controllers
+{
+    public class BookVehiclesController : Controller
+    {
+        private readonly InternalContext _context;
+
+        public BookVehiclesController(InternalContext context)
+        {
+            _context = context;
+        }
+
+        // GET: BookVehicles      
+
+        public async Task<IActionResult> Index(int? amt, string name)
+        {           
+            var internalContext = _context.BookVehicle.Include(b => b.C).Include(b => b.V).Where(a => a.Amount == (amt != null ? amt : a.Amount) && a.C.Cname.Contains(name != null ? name : a.C.Cname));
+            return View(await internalContext.ToListAsync());
+        }
+
+
+
+        // GET: BookVehicles/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var bookVehicle = await _context.BookVehicle
+                .Include(b => b.C)
+                .Include(b => b.V)
+                .FirstOrDefaultAsync(m => m.Bid == id);
+            if (bookVehicle == null)
+            {
+                return NotFound();
+            }
+
+            return View(bookVehicle);
+        }
+
+        // GET: BookVehicles/Create
+        public IActionResult Create()
+        {
+            ViewData["Cid"] = new SelectList(_context.Customer, "Cid", "Cname");
+            ViewData["Vid"] = new SelectList(_context.Vehicle, "Vid", "Vname");
+            return View();
+        }
+
+        // POST: BookVehicles/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Bid,Amount,Date,Cid,Vid")] BookVehicle bookVehicle)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(bookVehicle);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["Cid"] = new SelectList(_context.Customer, "Cid", "Cname", bookVehicle.Cid);
+            ViewData["Vid"] = new SelectList(_context.Vehicle, "Vid", "Vname", bookVehicle.Vid);
+            return View(bookVehicle);
+        }
+
+        // GET: BookVehicles/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var bookVehicle = await _context.BookVehicle.FindAsync(id);
+            if (bookVehicle == null)
+            {
+                return NotFound();
+            }
+            ViewData["Cid"] = new SelectList(_context.Customer, "Cid", "Cname", bookVehicle.Cid);
+            ViewData["Vid"] = new SelectList(_context.Vehicle, "Vid", "Vname", bookVehicle.Vid);
+            return View(bookVehicle);
+        }
+
+        // POST: BookVehicles/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Bid,Amount,Date,Cid,Vid")] BookVehicle bookVehicle)
+        {
+            if (id != bookVehicle.Bid)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(bookVehicle);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!BookVehicleExists(bookVehicle.Bid))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["Cid"] = new SelectList(_context.Customer, "Cid", "Cname", bookVehicle.Cid);
+            ViewData["Vid"] = new SelectList(_context.Vehicle, "Vid", "Vname", bookVehicle.Vid);
+            return View(bookVehicle);
+        }
+
+        // GET: BookVehicles/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var bookVehicle = await _context.BookVehicle
+                .Include(b => b.C)
+                .Include(b => b.V)
+                .FirstOrDefaultAsync(m => m.Bid == id);
+            if (bookVehicle == null)
+            {
+                return NotFound();
+            }
+
+            return View(bookVehicle);
+        }
+
+        // POST: BookVehicles/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var bookVehicle = await _context.BookVehicle.FindAsync(id);
+            _context.BookVehicle.Remove(bookVehicle);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool BookVehicleExists(int id)
+        {
+            return _context.BookVehicle.Any(e => e.Bid == id);
+        }
+
+        public List<BookVehicle> getData()
+        {
+            return _context.BookVehicle.ToList();
+        }
+
+        public IActionResult TupleDisplay()
+        {
+            var tuple = new Tuple<List<BookVehicle>>(getData());
+            return View(tuple);
+        }
+    }
+}
+
+==============================================
+**********************************************************************************************************************
+****************************************************Tuple With Core******************************************************************
+
+using InternalSolution.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace TupleWithCore
+{
+    class Program
+    {
+
+       
+        static void Main(string[] args)
+        {
+
+            //BookVehicle bv = new BookVehicle { Bid = 5, Amount  = 200, Date= new DateTime(2021-12-02), Cid =102, Vid=1002  };
+            //Tuple<BookVehicle> tuple = new Tuple<BookVehicle>(bv);
+            //Console.WriteLine(tuple.Item1.Date + " and " + tuple.Item1.Amount);
+            InternalContext db = new InternalContext();
+
+            List<BookVehicle> getData()
+            {
+                return db.BookVehicle.ToList();
+            }
+
+            var t = new Tuple<List<BookVehicle>>(getData());
+
+            foreach(var tuple in t.Item1)
+            {
+                Console.WriteLine(tuple.Date + " and " + tuple.Amount);
+            }
+
+
+           
+
+        }
+    }
+}
+
+
+****************************************************End Tuple With Core******************************************************************
+
+
+
+*****************************************entity search************************************************
+
+index.cshtml
+_____________
+
+@model IEnumerable<CrudwithMVC.Models.Employee>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <title>Index</title>
+</head>
+<body style="background-color: #ffe6e6 !important;">
+    <div class="row">
+        
+        <div class="col">
+            <div class="form-group form-inline">
+                <form action="/Employee/Index" method="get">
+                    <select class="form-control" name="searchType">
+                        <option value="name">Name</option>
+                        <option value="gender">Gender</option>
+                        <option value="address">Address</option>
+                        <option value="department">Department</option>
+
+                    </select>
+                    <input class="form-control" name="parameter" type="text" />
+                    <button type="submit" class="btn btn-info">Search</button>
+                </form>
+            </div>
+
+        </div>
+        <centre>
+            <table class="table table-striped" style="padding-left:20px!important;">
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Name)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Gender)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Address)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Department.DepartmentName)
+                    </th>
+                    <th></th>
+                </tr>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Gender)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Address)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Department.DepartmentName)
+                        </td>
+                        <td>
+                            @Html.ActionLink("Edit", "Edit", new { id = item.EmployeeId }) |
+                            @Html.ActionLink("Details", "Details", new { id = item.EmployeeId }) |
+                            @Html.ActionLink("Delete", "Delete", new { id = item.EmployeeId })
+                        </td>
+                    </tr>
+                }
+
+            </table>
+        </centre>
+        </div>
+</body>
+</html>
+
+
+---------------------
+EmployeeController.cs
+_______________________
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Entity;
+using System.Linq;
+using System.Net;
+using System.Web;
+using System.Web.Mvc;
+using CrudwithMVC.Models;
+
+namespace CrudwithMVC.Controllers
+{
+    public class EmployeeController : Controller
+    {
+        private PracticalsEntities1 db = new PracticalsEntities1();
+
+        // GET: Employee
+        public ActionResult Index(string searchtype, string parameter)
+        {
+            switch (searchtype)
+            {
+                case "name":
+                    var emp = (from s in db.Employees
+                               join c in db.Departments on s.DepartmentId equals c.DepartmentId
+                               where s.Name.Contains(parameter)
+                               select s).ToList();
+                    return View(emp);
+                    break;
+                case "gender":
+                    var emp1 = (from s in db.Employees
+                               join c in db.Departments on s.DepartmentId equals c.DepartmentId
+                               where s.Gender.Contains(parameter)
+                               select s).ToList();
+                    return View(emp1);
+                    break;
+                case "address":
+                    var emp2 = (from s in db.Employees
+                               join c in db.Departments on s.DepartmentId equals c.DepartmentId
+                               where s.Address.Contains(parameter)
+                               select s).ToList();
+                    return View(emp2);
+                    break;
+            }
+            var employees = db.Employees.Include(e => e.Department);
+            return View(employees.ToList());
+        }
+
+        // GET: Employee/Details/5
+        public ActionResult Details(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Employee employee = db.Employees.Find(id);
+            if (employee == null)
+            {
+                return HttpNotFound();
+            }
+            return View(employee);
+        }
+
+        // GET: Employee/Create
+        public ActionResult Create()
+        {
+            ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentName");
+            return View();
+        }
+
+        // POST: Employee/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create([Bind(Include = "EmployeeId,Name,Gender,Address,DepartmentId")] Employee employee)
+        {
+            if (ModelState.IsValid)
+            {
+                db.Employees.Add(employee);
+                db.SaveChanges();
+                return RedirectToAction("Index");
+            }
+
+            ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentName", employee.DepartmentId);
+            return View(employee);
+        }
+
+        // GET: Employee/Edit/5
+        public ActionResult Edit(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Employee employee = db.Employees.Find(id);
+            if (employee == null)
+            {
+                return HttpNotFound();
+            }
+            ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentName", employee.DepartmentId);
+            return View(employee);
+        }
+
+        // POST: Employee/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit([Bind(Include = "EmployeeId,Name,Gender,Address,DepartmentId")] Employee employee)
+        {
+            if (ModelState.IsValid)
+            {
+                db.Entry(employee).State = EntityState.Modified;
+                db.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentName", employee.DepartmentId);
+            return View(employee);
+        }
+
+        // GET: Employee/Delete/5
+        public ActionResult Delete(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Employee employee = db.Employees.Find(id);
+            if (employee == null)
+            {
+                return HttpNotFound();
+            }
+            return View(employee);
+        }
+
+        // POST: Employee/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteConfirmed(int id)
+        {
+            Employee employee = db.Employees.Find(id);
+            db.Employees.Remove(employee);
+            db.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}
+
+
+
+
+************************************End entity search************************************************
+
+
+
+**********************************************Steps Of Core********************************************************
+1) Install NuGet packages
+
+
+Either using NuGet Package Manager by right clicking on Project and Select Manage NuGet Package
+Now select following packages as per .net core project version
+Microsoft.VisualStudio.Web.CodeGeneration.Design
+Microsoft.EntityFrameworkCore.Tools
+Microsoft.EntityFrameworkCore.SqlServer
+
+
+OR Open NuGet Package Manager Console through Tools -> NuGet Package Manager -> Package Manager Console and use following command for required packages. (Note : change package version as per .Net Core application version)
+Install-Package Microsoft.VisualStudio.Web.CodeGeneration.Design -Version 3.1.4
+Install-Package Microsoft.EntityFrameworkCore.Tools -Version 3.1.8
+Install-Package Microsoft.EntityFrameworkCore.SqlServer -Version 3.1.8
+
+
+2) Create database and prepare connection string
+
+
+3) Use following command for scaffolding EF from Database
+
+
+Scaffold-DbContext "Connection String;Trusted_Connection=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models
+Scaffold-DbContext "Data Source=DESKTOP-JFQII0J;Initial Catalog=Practicals;Integrated Security=True;Trusted_Connection=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models
+
+Update connection string in scaffold command.
+e.g. 
+Scaffold-DbContext "Data Source=DESKTOP-TU99FBG\JOSHISQLSERVER;Initial Catalog=DICTDB;Integrated Security=True;Trusted_Connection=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models
+
+
+
+
+OR
+Use .NET CLI Command 
+
+
+dotnet user-secrets set ConnectionStrings:DBConnectionString "DESKTOP-TU99FBG\JOSHISQLSERVER;Initial Catalog=DICTDB;Integrated Security=True;Trusted_Connection=True;"
+
+
+dotnet ef dbcontext scaffold Name=ConnectionStrings:DBConnectionString Microsoft.EntityFrameworkCore.SqlServer 
+
+
+4) Write connection string in appsettings.json file.
+,
+  "ConnectionStrings": {
+    "DBConnectionString": "Connection String;"
+  }
+
+
+Update connection string as per selected database connection string.
+
+
+5) Write following statement in startup.cs file in ConfigureServices method.
+
+
+services.AddDbContext<DICTDBContext>(o => o.UseSqlServer(Configuration.GetConnectionString("DBConnectionString")));
+
+
+Update DataContext object as per Entity created by Scaffolding and also update connection string defined in appsettings.json file.
+
+
+6) Create Controller and View using EF. This will auto generate both using EF.
+
+
+
+**********************************************End Steps Of Core********************************************************
+
+************************************LinQ Crud******************************************************
+TestController
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace LinnQ_programm.Controllers
+{
+   
+    public class TestController : Controller
+    {
+        public DICTDataContext db = new DICTDataContext();
+        // GET: Test
+        public ActionResult Index()
+        {
+            return View(db.Authors.ToList());
+        }
+
+        // GET: Test/Details/5
+        public ActionResult Details(int id)
+        {
+            return View();
+        }
+
+        // GET: Test/Create
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Test/Create
+        [HttpPost]
+        public ActionResult Create(Author author)
+        {
+            try
+            {
+                // TODO: Add insert logic here
+                db.Authors.InsertOnSubmit(author);
+                db.SubmitChanges();
+                return RedirectToAction("Index");
+            }
+            catch
+            {
+                return View();
+            }
+        }
+
+
+        // GET: Test/Edit/5
+        public ActionResult Edit(int id)
+        {
+            Author a1 = db.Authors.SingleOrDefault(x => x.Id == id);
+            return View(a1);
+        }
+
+
+        // POST: Test/Edit/5
+        [HttpPost]
+        public ActionResult Edit(int id, Author Aedit)
+        {
+            try
+            {
+                // TODO: Add update logic here
+                Author a1 = db.Authors.SingleOrDefault(x => x.Id == id);
+                a1.Name = Aedit.Name;
+                a1.BookId = Aedit.BookId;
+                db.SubmitChanges();
+                return RedirectToAction("Index");
+            }
+            catch
+            {
+                return View();
+            }
+        }
+
+        // GET: Test/Delete/5
+        public ActionResult Delete(int id)
+        {
+            Author a1 = db.Authors.SingleOrDefault(x => x.Id == id);
+            return View(a1);
+        }
+
+        // POST: Test/Delete/5
+        [HttpPost]
+        public ActionResult Delete(int id, Author Aedit)
+        {
+            try
+            {
+                db.Authors.DeleteOnSubmit(db.Authors.SingleOrDefault(x => x.Id == id));
+                db.SubmitChanges();
+
+                return RedirectToAction("Index");
+            }
+            catch
+            {
+                return View();
+            }
+        }
+    }
+}
+
+------
+index.cshtml
+@model IEnumerable<LinnQ_programm.Author>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.BookId)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.BookId)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
+            @Html.ActionLink("Details", "Details", new { id=item.Id }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
+        </td>
+    </tr>
+}
+
+</table>
+
+************************************End LinQ Crud******************************************************
+
+
+********************************************************Radhika****************************************
+
+
+=======================================in-memory crud===================================================
+add data->new item->name.mdf
+
+create table and enter data in name.mdf file on left panel server explorer
+
+project->add item-> select linq to sql classes->name.dbml
+
+create controller with read write option (2nd option)
+//with entity framewrok wont work here. 
+
+add view as peer need with right click add view select model and all
+ok
+
+code for crud
+----------------------------------------------------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace _23_8Final.Controllers
+{
+    public class TestController : Controller
+    {
+        public DICTDataContext db = new DICTDataContext();
+        // GET: Test
+        public ActionResult Index()
+        {
+            return View(db.Authors.ToList());
+        }
+
+        // GET: Test/Details/5
+        public ActionResult Details(int id)
+        {
+            return View();
+        }
+
+        // GET: Test/Create
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Test/Create
+        [HttpPost]
+        public ActionResult Create(Author author)
+        {
+            try
+            {
+                // TODO: Add insert logic here
+                db.Authors.InsertOnSubmit(author);
+                db.SubmitChanges();
+                return RedirectToAction("Index");
+            }
+            catch
+            {
+                return View();
+            }
+        }
+
+        // GET: Test/Edit/5
+        public ActionResult Edit(int id)
+        {
+            Author author1 = db.Authors.SingleOrDefault(x => x.AuthorId == id);
+            return View(author1);
+        }
+
+        // POST: Test/Edit/5
+        [HttpPost]
+        public ActionResult Edit(int id, Author authoredit)
+        {
+            try
+            {
+                // TODO: Add update logic here
+                Author author1 = db.Authors.SingleOrDefault(x => x.AuthorId == id);
+                author1.Name = authoredit.Name;
+                author1.BookId = authoredit.BookId;
+                db.SubmitChanges();
+                return RedirectToAction("Index");
+            }
+            catch
+            {
+                return View();
+            }
+        }
+
+        // GET: Test/Delete/5
+        public ActionResult Delete(int id)
+        {
+            Author author1 = db.Authors.SingleOrDefault(x => x.AuthorId == id);
+            return View(author1);
+        }
+
+        // POST: Test/Delete/5
+        [HttpPost]
+        public ActionResult Delete(int id, FormCollection collection)
+        {
+            try
+            {
+                // TODO: Add delete logic here
+                db.Authors.DeleteOnSubmit(db.Authors.SingleOrDefault(x => x.AuthorId == id));
+                db.SubmitChanges();
+                return RedirectToAction("Index");
+            }
+            catch
+            {
+                return View();
+            }
+        }
+    }
+}
+
+===================================================end==================================================
+=====================================.net core crud=====================================================
+Working with Entity Framework in .NET Core application
+
+
+1) Install NuGet packages
+
+
+Either using NuGet Package Manager by right clicking on Project and Select Manage NuGet Package
+Now select following packages as per .net core project version
+Microsoft.VisualStudio.Web.CodeGeneration.Design
+Microsoft.EntityFrameworkCore.Tools
+Microsoft.EntityFrameworkCore.SqlServer
+
+
+OR Open NuGet Package Manager Console through Tools -> NuGet Package Manager -> Package Manager Console and use following command for required packages. (Note : change package version as per .Net Core application version)
+Install-Package Microsoft.VisualStudio.Web.CodeGeneration.Design -Version 3.1.4
+Install-Package Microsoft.EntityFrameworkCore.Tools -Version 3.1.8
+Install-Package Microsoft.EntityFrameworkCore.SqlServer -Version 3.1.8
+
+
+2) Create database and prepare connection string
+
+
+3) Use following command for scaffolding EF from Database
+
+
+Scaffold-DbContext "Connection String;Trusted_Connection=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models
+
+
+Update connection string in scaffold command.
+e.g. 
+Scaffold-DbContext "Data Source=DESKTOP-TU99FBG\JOSHISQLSERVER;Initial Catalog=DICTDB;Integrated Security=True;Trusted_Connection=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models
+
+
+
+
+OR
+Use .NET CLI Command 
+
+
+dotnet user-secrets set ConnectionStrings:DBConnectionString "DESKTOP-TU99FBG\JOSHISQLSERVER;Initial Catalog=DICTDB;Integrated Security=True;Trusted_Connection=True;"
+
+
+dotnet ef dbcontext scaffold Name=ConnectionStrings:DBConnectionString Microsoft.EntityFrameworkCore.SqlServer 
+
+
+4) Write connection string in appsettings.json file.
+,
+  "ConnectionStrings": {
+    "DBConnectionString": "Connection String;"
+  }
+
+
+Update connection string as per selected database connection string.
+
+
+5) Write following statement in startup.cs file in ConfigureServices method.
+
+
+services.AddDbContext<DICTDBContext>(o => o.UseSqlServer(Configuration.GetConnectionString("DBConnectionString")));
+
+
+Update DataContext object as per Entity created by Scaffolding and also update connection string defined in appsettings.json file.
+
+
+6) Create Controller and View using EF. This will auto generate both using EF.
+
+====================================.net core crud end================================================
+
+
+===================search with ternary condition in entity core(model-view-controller)=====================
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using InternalSolution.Models;
+
+namespace InternalSolution.Controllers
+{
+    public class BookVehiclesController : Controller
+    {
+        private readonly InternalContext _context;
+
+        public BookVehiclesController(InternalContext context)
+        {
+            _context = context;
+        }
+
+        // GET: BookVehicles      
+
+        public async Task<IActionResult> Index(int? amt, string name)
+        {           
+            var internalContext = _context.BookVehicle.Include(b => b.C).Include(b => b.V).Where(a => a.Amount == (amt != null ? amt : a.Amount) && a.C.Cname.Contains(name != null ? name : a.C.Cname));
+            return View(await internalContext.ToListAsync());
+        }
+
+
+
+        // GET: BookVehicles/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var bookVehicle = await _context.BookVehicle
+                .Include(b => b.C)
+                .Include(b => b.V)
+                .FirstOrDefaultAsync(m => m.Bid == id);
+            if (bookVehicle == null)
+            {
+                return NotFound();
+            }
+
+            return View(bookVehicle);
+        }
+
+        // GET: BookVehicles/Create
+        public IActionResult Create()
+        {
+            ViewData["Cid"] = new SelectList(_context.Customer, "Cid", "Cname");
+            ViewData["Vid"] = new SelectList(_context.Vehicle, "Vid", "Vname");
+            return View();
+        }
+
+        // POST: BookVehicles/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Bid,Amount,Date,Cid,Vid")] BookVehicle bookVehicle)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(bookVehicle);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["Cid"] = new SelectList(_context.Customer, "Cid", "Cname", bookVehicle.Cid);
+            ViewData["Vid"] = new SelectList(_context.Vehicle, "Vid", "Vname", bookVehicle.Vid);
+            return View(bookVehicle);
+        }
+
+        // GET: BookVehicles/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var bookVehicle = await _context.BookVehicle.FindAsync(id);
+            if (bookVehicle == null)
+            {
+                return NotFound();
+            }
+            ViewData["Cid"] = new SelectList(_context.Customer, "Cid", "Cname", bookVehicle.Cid);
+            ViewData["Vid"] = new SelectList(_context.Vehicle, "Vid", "Vname", bookVehicle.Vid);
+            return View(bookVehicle);
+        }
+
+        // POST: BookVehicles/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Bid,Amount,Date,Cid,Vid")] BookVehicle bookVehicle)
+        {
+            if (id != bookVehicle.Bid)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(bookVehicle);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!BookVehicleExists(bookVehicle.Bid))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["Cid"] = new SelectList(_context.Customer, "Cid", "Cname", bookVehicle.Cid);
+            ViewData["Vid"] = new SelectList(_context.Vehicle, "Vid", "Vname", bookVehicle.Vid);
+            return View(bookVehicle);
+        }
+
+        // GET: BookVehicles/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var bookVehicle = await _context.BookVehicle
+                .Include(b => b.C)
+                .Include(b => b.V)
+                .FirstOrDefaultAsync(m => m.Bid == id);
+            if (bookVehicle == null)
+            {
+                return NotFound();
+            }
+
+            return View(bookVehicle);
+        }
+
+        // POST: BookVehicles/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var bookVehicle = await _context.BookVehicle.FindAsync(id);
+            _context.BookVehicle.Remove(bookVehicle);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool BookVehicleExists(int id)
+        {
+            return _context.BookVehicle.Any(e => e.Bid == id);
+        }
+
+        public List<BookVehicle> getData()
+        {
+            return _context.BookVehicle.ToList();
+        }
+
+        public IActionResult TupleDisplay()
+        {
+            var tuple = new Tuple<List<BookVehicle>>(getData());
+            return View(tuple);
+        }
+    }
+}
+
+-------------------------------------------------index.cshtml
+@model IEnumerable<InternalSolution.Models.BookVehicle>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<br />
+<div class="container">
+    @using (Html.BeginForm("Index", "BookVehicles", FormMethod.Get))
+    {
+    <div class="row">
+        <div class="col-md-3">
+            <input type="number" name="amt" placeholder="Search By Amount" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="name" placeholder="Search By Customer" class="form-control" />
+        </div>       
+        <div class="col-md-3">
+            <input type="submit" value="Search" class="btn btn-primary" />
+        </div>
+    </div>
+      
+    }
+</div>
+<br />
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Amount)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Date)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Cid)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Vid)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Amount)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Date)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.C.Cname)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.V.Vname)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Bid">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Bid">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Bid">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+=================================another search with linq query switch case===============================
+//controller
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Entity;
+using System.Linq;
+using System.Net;
+using System.Web;
+using System.Web.Mvc;
+using CrudwithMVC.Models;
+
+namespace CrudwithMVC.Controllers
+{
+    public class EmployeeController : Controller
+    {
+        private PracticalsEntities1 db = new PracticalsEntities1();
+
+        // GET: Employee
+        public ActionResult Index(string searchtype, string parameter)
+        {
+            switch (searchtype)
+            {
+                case "name":
+                    var emp = (from s in db.Employees
+                               join c in db.Departments on s.DepartmentId equals c.DepartmentId
+                               where s.Name.Contains(parameter)
+                               select s).ToList();
+                    return View(emp);
+                    break;
+                case "gender":
+                    var emp1 = (from s in db.Employees
+                               join c in db.Departments on s.DepartmentId equals c.DepartmentId
+                               where s.Gender.Contains(parameter)
+                               select s).ToList();
+                    return View(emp1);
+                    break;
+                case "address":
+                    var emp2 = (from s in db.Employees
+                               join c in db.Departments on s.DepartmentId equals c.DepartmentId
+                               where s.Address.Contains(parameter)
+                               select s).ToList();
+                    return View(emp2);
+                    break;
+            }
+                var employees = db.Employees.Include(e => e.Department);
+            return View(employees.ToList());
+        }
+
+        // GET: Employee/Details/5
+        public ActionResult Details(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Employee employee = db.Employees.Find(id);
+            if (employee == null)
+            {
+                return HttpNotFound();
+            }
+            return View(employee);
+        }
+
+        // GET: Employee/Create
+        public ActionResult Create()
+        {
+            ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentName");
+            return View();
+        }
+
+        // POST: Employee/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create([Bind(Include = "EmployeeId,Name,Gender,Address,DepartmentId")] Employee employee)
+        {
+            if (ModelState.IsValid)
+            {
+                db.Employees.Add(employee);
+                db.SaveChanges();
+                return RedirectToAction("Index");
+            }
+
+            ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentName", employee.DepartmentId);
+            return View(employee);
+        }
+
+        // GET: Employee/Edit/5
+        public ActionResult Edit(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Employee employee = db.Employees.Find(id);
+            if (employee == null)
+            {
+                return HttpNotFound();
+            }
+            ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentName", employee.DepartmentId);
+            return View(employee);
+        }
+
+        // POST: Employee/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit([Bind(Include = "EmployeeId,Name,Gender,Address,DepartmentId")] Employee employee)
+        {
+            if (ModelState.IsValid)
+            {
+                db.Entry(employee).State = EntityState.Modified;
+                db.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "DepartmentName", employee.DepartmentId);
+            return View(employee);
+        }
+
+        // GET: Employee/Delete/5
+        public ActionResult Delete(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            Employee employee = db.Employees.Find(id);
+            if (employee == null)
+            {
+                return HttpNotFound();
+            }
+            return View(employee);
+        }
+
+        // POST: Employee/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteConfirmed(int id)
+        {
+            Employee employee = db.Employees.Find(id);
+            db.Employees.Remove(employee);
+            db.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}
+
+
+//cshtml
+
+
+
+@model IEnumerable<CrudwithMVC.Models.Employee>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <title>Index</title>
+</head>
+<body style="background-color: #ffe6e6 !important;">
+    <div class="row">
+        
+        <div class="col">
+            <div class="form-group form-inline">
+                <form action="/Employee/Index" method="get">
+                    <select class="form-control" name="searchType">
+                        <option value="name">Name</option>
+                        <option value="gender">Gender</option>
+                        <option value="address">Address</option>
+                        <option value="department">Department</option>
+
+                    </select>
+                    <input class="form-control" name="parameter" type="text" />
+                    <button type="submit" class="btn btn-info">Search</button>
+                </form>
+            </div>
+
+        </div>
+        <centre>
+            <table class="table table-striped" style="padding-left:20px!important;">
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Name)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Gender)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Address)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Department.DepartmentName)
+                    </th>
+                    <th></th>
+                </tr>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Gender)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Address)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Department.DepartmentName)
+                        </td>
+                        <td>
+                            @Html.ActionLink("Edit", "Edit", new { id = item.EmployeeId }) |
+                            @Html.ActionLink("Details", "Details", new { id = item.EmployeeId }) |
+                            @Html.ActionLink("Delete", "Delete", new { id = item.EmployeeId })
+                        </td>
+                    </tr>
+                }
+
+            </table>
+        </centre>
+        </div>
+</body>
+</html>
+
+=======================================end===============================================================
+==========================================url search=====================================================
+//in controller
+
+ public ActionResult search(string name)
+        {
+            return View(_context.TaskTbs.Where(p => p.Tname.Contains(name)).ToList());
+        }
+
+//create view by right click list type with whatever model
+
+======================================end============================================================
+
+public ActionResult Index()
+        {
+            HttpClient httpClient = new HttpClient();
+            var Response = httpClient.GetAsync("http://localhost:29523/api/courses").Result;
+            string data = Response.Content.ReadAsStringAsync().Result;
+            List<Course> courses = JsonConvert.DeserializeObject<List<Course>>(data);
+            return View(courses.ToList());
+        }
+
+
+  @foreach (var employee in ViewBag.employee)
+        {
+            <tr>
+                <td>@employee.projectId</td>
+                <td>@employee.projectname</td>
+                <td>@employee.studentId</td>
+               
+            </tr>
+
+        }
+
+ List<project> emp = new List<project>
+            {
+                new project
+                {
+                    projectId = 1,
+                    projectname = "John",
+                    studentId=null
+                },
+
+            };
+
+            ViewBag.employee = emp;
+
+
+
+********************************************************End Radhika****************************************
