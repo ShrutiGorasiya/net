@@ -776,8 +776,392 @@ index.cshtml
 ************************************End LinQ Crud******************************************************
 
 
-********************************************************Radhika****************************************
+********************************************LINQ with Array*********************************************
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+ 
+namespace LinqTutorial
+{     
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            string[] productList = new string[7];
+ 
+            productList[0] = "Hard Disk";
+            productList[1] = "Monitor";
+            productList[2] = "SSD Disk";
+            productList[3] = "RAM";
+            productList[4] = "Processor";
+            productList[5] = "Bluetooth";
+            productList[6] = "Keyboard";
+ 
+            //Method 1
+            var search = from x in productList
+                         where x.Contains("Disk")
+                         select x;
+            //Method 2
+            //var search = productList.Where(p => p.Contains("Disk"));
+            
+            foreach (var result in search)
+            {
+                Console.WriteLine("Product Name: {0}", result);
+            }
+ 
+            Console.ReadKey();
+        }
+    }
+}
+
+
+
+********************************************End LINQ with Array*********************************************
+
+
+********************************************LINQ WITH ARRAYLIST*********************************************
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+ 
+namespace LinqTutorial
+{     
+    class Program
+    {
+        class ProductStore
+        {
+            public string productName { get; set; }
+            public int productPrice { get; set; }         
+        }
+        static void Main(string[] args)
+        {
+            ArrayList productList = new ArrayList();
+            productList.Add(new ProductStore { productName = "Hard Disk", productPrice = 1280 });
+            productList.Add(new ProductStore { productName = "Monitor", productPrice = 3000 });
+            productList.Add(new ProductStore { productName = "SSD Disk", productPrice = 3500 });
+            productList.Add(new ProductStore { productName = "RAM", productPrice = 2450 });
+            productList.Add(new ProductStore { productName = "Processor", productPrice = 7680 });
+            productList.Add(new ProductStore { productName = "Bluetooth", productPrice = 540 });
+            productList.Add(new ProductStore { productName = "Keyboard", productPrice = 1130 });
+ 
+            //Method 1: Query Expression
+            var search = from ProductStore p in productList
+                         where p.productName.Contains("Disk")
+                         select p;
+ 
+            
+            
+            foreach (var result in search)
+            {
+                Console.WriteLine("Product Name: {0}, Price: {1}", result.productName, result.productPrice);
+            }
+ 
+            Console.ReadKey();
+        }
+    }
+}
+
+********************************************End LINQ WITH ARRAYLIST*********************************************
+----------------------------C# lambda expression simple example------------------------
+Program.cs
+Func<int, int> square = x => x * x;
+Func<int, int> cube = x => x * x * x;
+Func<int, int> inc = x => x++;
+Func<int, int, int> add = (x, y) => x + y;
+
+Console.WriteLine(square(5));
+Console.WriteLine(cube(5));
+Console.WriteLine(inc(5));
+Console.WriteLine(add(5, 7
+-------------------------------------------------------------------------------------
+----------------------------C# lambda statement-----------------------------------
+Program.cs
+Action<string> greet = name =>
+{
+    string greeting = $"Hello {name}!";
+    Console.WriteLine(greeting);
+};
+
+greet("Pau");
+greet("Lucia");
+------------------------------------------------------------------------------
+---------------------------C# lambda expression with arrays----------------------
+Program.cs
+int[] vals = { 1, -2, 3, 4, 0, -3, 2, 1, 3 };
+
+var v1 = Array.FindIndex(vals, x => x == 3);
+Console.WriteLine(v1);
+
+var v2 = Array.FindLastIndex(vals, x => x == 3);
+Console.WriteLine(v2);
+
+var positive = Array.FindAll(vals, x => x > 0);
+Console.WriteLine(string.Join(",", positive));
+----------------------------------------------------------------------------\
+-----------------------C# lambda expression with LINQ---------------------
+Program.cs
+var vals = new List<int> { -1, 2, -2, 0, 3, 4, -5 };
+
+var squared = vals.Select(x => x * x);
+Console.WriteLine(string.Join(", ", squared));
+
+var filtered = vals.Where(x => x > 0);
+Console.WriteLine(string.Join(", ", filtered));
+--------------------------------------------------------------
+--------------------------C# array of lambda expressions------------------------
+Program.cs
+var funs = new Func<int, int>[]
+{
+    x => x * x,
+    x => ++x,
+    x => --x
+};
+
+for (int i=0; i<6; i++) 
+{
+    Console.WriteLine(funs[0](i));
+    Console.WriteLine(funs[1](i));
+    Console.WriteLine(funs[2](i));
+    Console.WriteLine();
+}
+------------------------------------------------------------------
+----------------------C# lambda expression discards--------------
+
+Program.cs
+using System.Windows.Forms;
+using System.Drawing;
+
+namespace QuitButton
+{
+    class MyForm : Form
+    {
+        private FlowLayoutPanel flowPanel;
+
+        public MyForm()
+        {
+            InitComponents();
+        }
+
+        private void InitComponents()
+        {
+            Text = "Quit button";
+            ClientSize = new Size(800, 450);
+
+            flowPanel = new FlowLayoutPanel();
+
+            flowPanel.Dock = DockStyle.Fill;
+            flowPanel.BorderStyle = BorderStyle.FixedSingle;
+
+            var button = new Button();
+            button.Margin = new Padding(10, 10, 0, 0);
+
+            button.Text = "Quit";
+            button.AutoSize = true;
+            button.Click += (_, _) => Close();
+
+            flowPanel.Controls.Add(button);
+            Controls.Add(flowPanel);
+
+            CenterToScreen();
+        }
+
+        [STAThread]
+        static void Main()
+        {
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
+            Application.EnableVisualStyles();
+            Application.Run(new MyForm());
+        }
+    }
+}
+
+---------------------------------------------------------------------------
+
+
+----------------------------Converting Generic List into DataTable---------------------------
+
+using System.Collections.Generic;  
+using System.Data;  
+using System.Reflection;  
+  
+namespace ListtoDataTable  
+{  
+    class Program  
+    {  
+        static void Main(string[] args)  
+        {  
+  
+            List<Employee> Students = new List<Employee>(){  
+                new Employee() { Name = "Pradeep", salary = 15000, EmpId = 100 },  
+                 new Employee() { Name = "Smith", salary = 25000, EmpId = 101},  
+                new Employee() { Name = "John", salary = 21000, EmpId = 102 }  
+            };  
+  
+            ListtoDataTable lsttodt = new ListtoDataTable();  
+            DataTable dt = lsttodt.ToDataTable(Students);    
+        }  
+    }  
+  
+    public class Employee  
+    {  
+        public string Name { get; set; }  
+        public int EmpId { get; set; }  
+        public int salary { get; set; }  
+    }  
+  
+    public class ListtoDataTable  
+    {  
+        public DataTable ToDataTable<T>(List<T> items)  
+        {  
+            DataTable dataTable = new DataTable(typeof(T).Name);  
+            //Get all the properties by using reflection   
+            PropertyInfo[] Props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);  
+            foreach (PropertyInfo prop in Props)  
+            {  
+                //Setting column names as Property names  
+                dataTable.Columns.Add(prop.Name);  
+            }  
+            foreach (T item in items)  
+            {  
+                var values = new object[Props.Length];  
+                for (int i = 0; i < Props.Length; i++)  
+                {  
+                     
+                    values[i] = Props[i].GetValue(item, null);  
+                }  
+                dataTable.Rows.Add(values);  
+            }  
+              
+            return dataTable;  
+        }  
+    }  
+} 
+
+
+----------------------------End Converting Generic List into DataTable------------------------
+
+
+-------------------------------Accessing Tuple Elements-------------------------
+
+var person = Tuple.Create(1, "Steve", "Jobs");
+person.Item1; // returns 1
+person.Item2; // returns "Steve"
+person.Item3; // returns "Jobs"
+
+
+var numbers = Tuple.Create("One", 2, 3, "Four", 5, "Six", 7, 8);
+numbers.Item1; // returns "One"
+numbers.Item2; // returns 2
+numbers.Item3; // returns 3
+numbers.Item4; // returns "Four"
+numbers.Item5; // returns 5
+numbers.Item6; // returns "Six"
+numbers.Item7; // returns 7
+numbers.Rest; // returns (8)
+numbers.Rest.Item1; // returns 8
+
+-----------------------------endAccessing Tuple Elements---------------------------
+
+
+--------------------Nested Tuples----------------------------
+
+var numbers = Tuple.Create(1, 2, 3, 4, 5, 6, 7, Tuple.Create(8, 9, 10, 11, 12, 13));
+numbers.Item1; // returns 1
+numbers.Item7; // returns 7
+numbers.Rest.Item1; //returns (8, 9, 10, 11, 12, 13)
+numbers.Rest.Item1.Item1; //returns 8
+numbers.Rest.Item1.Item2; //returns 9
+
+------------------------------------------------
+
+
+---------------------------Tuple as a Method Parameter-------
+
+
+static void Main(string[] args)
+{
+    var person = Tuple.Create(1, "Steve", "Jobs");
+    DisplayTuple(person);
+}
+
+static void DisplayTuple(Tuple<int,string,string> person)
+{
+    Console.WriteLine($"Id = { person.Item1}");
+    Console.WriteLine($"First Name = { person.Item2}");
+    Console.WriteLine($"Last Name = { person.Item3}");
+}
+
+---------------------------End Tuple as a Method Parameter-------
+
+
+---------------------Tuple as a Return Type-----------------
+
+
+static void Main(string[] args)
+{
+    var person = GetPerson();
+}
+
+static Tuple<int, string, string> GetPerson() 
+{
+    return Tuple.Create(1, "Bill", "Gates");
+}
+
+-------------------------------------------
+
+
+----------------------How to sort the generic SortedList in the descending order?----------------------
+
+
+class DecendingComparer<TKey>: IComparer<int>
+{
+    public int Compare(int x, int y)
+    {
+        return y.CompareTo(x);
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        SortedList<int, int> descSortedList = new SortedList<int, int>(new DecendingComparer<int>());
+        descSortedList.Add(1, 1);
+        descSortedList.Add(4, 4);
+        descSortedList.Add(3, 3);
+        descSortedList.Add(2, 2);
+
+        for (int i = 0; i < descSortedList.Count; i++)
+        {
+            Console.WriteLine("key: {0}, value: {1}", descSortedList.Keys[i], descSortedList.Values[i]);
+        }
+}
+
+====================================================
+class Program
+{
+    static void Main(string[] args)
+    {
+        var descendingComparer = Comparer<int>.Create((x, y) => y.CompareTo(x));
+        
+        SortedList<int, int> descSortedList = new SortedList<int, int>(descendingComparer);
+        descSortedList.Add(1, 1);
+        descSortedList.Add(4, 4);
+        descSortedList.Add(3, 3);
+        descSortedList.Add(2, 2);
+
+        for (int i = 0; i < descSortedList.Count; i++)
+        {
+            Console.WriteLine("key: {0}, value: {1}", descSortedList.Keys[i], descSortedList.Values[i]);
+        }
+}
+
+-----------------------------------------------------------------------------------------------
+
+========================================================================================================
+**************************************************Radhika**********************************************
 
 =======================================in-memory crud===================================================
 add data->new item->name.mdf
@@ -962,6 +1346,30 @@ Update DataContext object as per Entity created by Scaffolding and also update c
 
 ====================================.net core crud end================================================
 
+=======================================search in range with ternary condition in entity core(model-view-controller)============================
+ public async Task<IActionResult> Index(int? amt,int? amt1, string name)
+        {
+            var internalContext = _context.DailyTime.Where(a => a.KeyHit > (amt != null ? amt : a.KeyHit) && a.KeyHit < (amt1 != null ? amt1 : a.KeyHit) && a.AppName.Contains(name != null ? name : a.AppName));
+            return View(await internalContext.ToListAsync());
+        }
+--------------------------------------------------------------//cshtml------------------------------------------------------------------------
+<div class="container">
+    @using (Html.BeginForm("Index", "BookVehicles", FormMethod.Get))
+    {
+    <div class="row">
+        <div class="col-md-3">
+            <input type="number" name="amt" placeholder="Search By Amount" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="name" placeholder="Search By Customer" class="form-control" />
+        </div>       
+        <div class="col-md-3">
+            <input type="submit" value="Search" class="btn btn-primary" />
+        </div>
+    </div>
+      
+    }
+</div>
 
 ===================search with ternary condition in entity core(model-view-controller)=====================
 using System;
@@ -1478,7 +1886,748 @@ namespace CrudwithMVC.Controllers
 //create view by right click list type with whatever model
 
 ======================================end============================================================
+========================================lambda search queries================================================
+//url
+https://www.c-sharpcorner.com/UploadFile/babu_2082/linq-operators-and-lambda-expression-syntax-examples/
 
+
+IEnumerable<int> indices =  
+products.  
+Select((product, index) => new { product, index }).  
+Where(x => x.product.UnitPrice >= 10).  
+Select(x => x.index); 
+
+
+
+var custOrders = from c in customers  
+join o in orders on c.CustomerID equals o.CustomerID  
+select new {  
+    c.Name, o.OrderDate, o.Total  
+};  
+
+
+
+IEnumerable<Order> orders =  
+customers.  
+Where(c => c.Country == "Denmark").  
+SelectMany(c => c.Orders);  
+var namesAndOrderIDs =  
+customers.  
+Where(c => c.Country == "Denmark").  
+SelectMany(c => c.Orders).  
+Where(o => o.OrderDate.Year == 2005).  
+Select(o => new { o.Customer.Name, o.OrderID });  
+var namesAndOrderIDs =  
+customers.  
+Where(c => c.Country == "Denmark").  
+SelectMany(c => c.Orders, (c,o) => new { c, o }).  
+Where(co => co.o.OrderDate.Year == 2005).  
+Select(co => new { co.c.Name, co.o.OrderID });  
+  
+var namesAndOrderIDs =  
+from c in customers  
+where c.Country == "Denmark"  
+from o in c.Orders  
+where o.OrderDate.Year == 2005  
+select new { c.Name, o.OrderID };  
+
+
+
+===================================================================================================
+=========================================tuple===================================================
+static void Main(string[] args)
+{
+    var person = Tuple.Create(1, "Steve", "Jobs");
+    DisplayTuple(person);
+}
+
+static void DisplayTuple(Tuple<int,string,string> person)
+{
+    Console.WriteLine($"Id = { person.Item1}");
+    Console.WriteLine($"First Name = { person.Item2}");
+    Console.WriteLine($"Last Name = { person.Item3}");
+}
+
+------------------------------------------------------
+
+//Decalre an Entity Tuple  
+var ID = 100;  
+var First_Name = "John";  
+var Last_Name = "Doe";  
+var Date_Birth = new DateTime(1980, 10, 1);  
+var Street_Address = "100 Street West";  
+var City = "Toronto";  
+var Province = "ON";  
+var Date_Joining = new DateTime(2020, 1, 15);  
+  
+var employee = (ID, First_Name, Last_Name, Date_Birth, Street_Address, City, Province, Date_Joining);  
+  
+// Displaying the values from the Tuple  
+Console.WriteLine($"ID: {employee.ID}");  
+Console.WriteLine($"First Name: {employee.First_Name}");  
+Console.WriteLine($"Last Name: {employee.Last_Name}");  
+Console.WriteLine($"Date of Birth: {employee.Date_Birth}");  
+Console.WriteLine($"Street Address: {employee.Street_Address}");  
+Console.WriteLine($"City: {employee.City}");  
+Console.WriteLine($"Province: {employee.Province}");  
+Console.WriteLine($"Date of Joining: {employee.Date_Joining}");  
+
+
+
+SendTuple(employee);  
+private static void SendTuple((int ID, string First_Name, string Last_Name, DateTime Date_Birth, string Street_Address, string City, string Province, DateTime Date_Joining) employee)  
+{  
+    Console.WriteLine($"Display from within the Send Tuple function");  
+    Console.WriteLine($"ID: {employee.ID}");  
+    Console.WriteLine($"First Name: {employee.First_Name}");  
+    Console.WriteLine($"Last Name: {employee.Last_Name}");  
+    Console.WriteLine($"Date of Birth: {employee.Date_Birth}");  
+    Console.WriteLine($"Street Address: {employee.Street_Address}");  
+    Console.WriteLine($"City: {employee.City}");  
+    Console.WriteLine($"Province: {employee.Province}");  
+    Console.WriteLine($"Date of Joining: {employee.Date_Joining}");  
+}  
+  //Receiving a Tuple as a return value from a function  
+           (int ID, string First_Name, string Last_Name, DateTime Date_Birth, string Street_Address, string City, string Province, DateTime Date_Joining) emp = ReceiveTuple();  
+  
+// Displaying the values from the returned Tuple  
+Console.WriteLine($"Display from values returned from the Tuple function");  
+Console.WriteLine($"ID: {emp.ID}");  
+Console.WriteLine($"First Name: {emp.First_Name}");  
+Console.WriteLine($"Last Name: {emp.Last_Name}");  
+Console.WriteLine($"Date of Birth: {emp.Date_Birth}");  
+Console.WriteLine($"Street Address: {emp.Street_Address}");  
+Console.WriteLine($"City: {emp.City}");  
+Console.WriteLine($"Province: {emp.Province}");  
+Console.WriteLine($"Date of Joining: {emp.Date_Joining}");  
+  
+private static (int ID, string First_Name, string Last_Name, DateTime Date_Birth, string Street_Address, string City, string Province, DateTime Date_Joining) ReceiveTuple()  
+{  
+    var ID = 200;  
+    var First_Name = "Jane";  
+    var Last_Name = "Doe";  
+    var Date_Birth = new DateTime(1990, 05, 30);  
+    var Street_Address = "275 Street East";  
+    var City = "Toronto";  
+    var Province = "ON";  
+    var Date_Joining = new DateTime(2020, 2, 20);  
+    var employee = (ID, First_Name, Last_Name, Date_Birth, Street_Address, City, Province, Date_Joining);  
+    return employee;  
+
+------------------------------------------classroom------------------------------------------------
+﻿using System;
+using System.Collections.Generic;
+
+namespace CoreConFirstAppDemoCS
+{
+    class Test
+    {
+        public int x;
+        public string y;
+        public float z;
+    }
+
+
+    class Program
+    {
+        static void Main1(string[] args)
+        {
+            int i = 12_23;
+            var f = 44_3.56_7f;
+            var x = 0xA_F_C7;
+            var b = 0b1_001_10_0110;
+            Console.WriteLine(b);
+
+        }
+
+       
+        static void Main2(string[] args)
+        {
+            Tuple<int, string> data = new Tuple<int, string>(5, "ABC");
+            Console.WriteLine(data.Item2);
+
+            Test t = new Test { x = 5, y = "XYZ", z = 32.45f };
+
+            Tuple<Test, int> newData = new Tuple<Test, int>(t, 44);
+
+            Console.WriteLine(newData.Item1.z + " and " + newData.Item2);
+
+        }
+
+        //int a;
+        //MyData(out a);
+        private static void MyData(out int x)
+        {
+            int b = 10;
+            x = b + 5;
+        }
+
+        static void Main3(string[] args)
+        {
+            //Console.WriteLine(GetValues().Item2);
+
+            Test t = new Test { x = 5, y = "XYZ", z = 32.45f };
+
+            Tuple<Test, int, string> data = GetValues2(t, 55, "Who are you?");
+            Console.WriteLine(data.Item2);
+
+        }
+
+        static Tuple<int, string> GetValues()
+        {
+            return new Tuple<int, string>(10, "how are you?");
+        }
+
+        static Tuple<Test, int, string> GetValues2(Test t, int iValue1, string sValue2)
+        {
+            //iValue1 += 20;
+            //return new Tuple<Test, int, string>(t, iValue1, sValue2);
+            int i = iValue1 + 40;
+            return new Tuple<Test, int, string>(t, i, sValue2);
+        }
+
+        static void Main(string[] args)
+        {
+            List<Tuple<int, string>> myList = new List<Tuple<int, string>>();
+
+            myList.Add(new Tuple<int, string>(1, "a"));
+            myList.Add(new Tuple<int, string>(2, "b"));
+            myList.Add(new Tuple<int, string>(3, "c"));
+
+            foreach (var data in myList)
+            {
+                Console.WriteLine(data.Item1 + " - " + data.Item2);
+            }
+
+        }
+
+
+    }
+}
+================================================================================================
+===================================linq to object classroom=======================================
+   public class Customer
+    {
+        public int ID { get; set; }
+        public string Name { get; set; }
+        public int Age { get; set; }
+        public string City { get; set; }
+        public int Balance { get; set; }
+
+        public override string ToString()
+        {
+            return "ID : " + ID + " Name : " + Name + " Age : " + Age 
+                + " City : " + City + " Balance : " + Balance ;
+        }
+    }
+------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace ICT2LINQDemoConAppCS
+{
+    class LINQToObjectsDemo
+    {
+        static void Main1(string[] args)
+        {
+            List<Customer> custemers = new List<Customer>();
+            custemers.Add(new Customer { ID = 1, Name = "ABC", Age = 20, City = "Surat", Balance = 300 });
+            custemers.Add(new Customer { ID = 2, Name = "PQR", Age = 24, City = "Surat", Balance = 250 });
+            custemers.Add(new Customer { ID = 3, Name = "XYZ", Age = 20, City = "Ahmedabad", Balance = 200 });
+            custemers.Add(new Customer { ID = 4, Name = "EWS", Age = 27, City = "Vadodara", Balance = 150 });
+            custemers.Add(new Customer { ID = 5, Name = "YUV", Age = 21, City = "Rajkot", Balance = 100 });
+
+            //var CustList = from c in custemers
+            //               //where c.ID == 1 || c.ID == 4
+            //               //where c.City == "surat"
+            //               //where c.City.Equals("surat")
+            //               //where c.Age > 22 && c.Age < 25
+            //               //where c.City.Contains("ra")
+            //               select c;
+            //==================================================
+            //string s = " OK ";
+            //var CustList = from c in custemers
+            //               //where (c.Age > 20 && c.Age < 25) || c.Balance < 200
+            //               select new { c.ID, c.Name, s};
+
+            //foreach (var item in CustList)
+            //{
+            //    Console.WriteLine(item.ID + " " + item.Name + item.s);
+            //}
+            //===================================================
+
+            var CustList = custemers.Where(c => c.Age > 20 && c.Age < 26)
+                            .Where(city => city.City.Equals("Surat"))
+                            .Select (c => new {c.ID, c.Age });
+
+            foreach (var item in CustList)
+            {
+                Console.WriteLine(item.ID + " " + item.Age);
+            }
+
+            
+            var maxValue = custemers.Select(c => c.Age);
+            Console.WriteLine(custemers.Select(c => c.Age).Max());
+            Console.WriteLine(custemers.Where(c => c.Age == custemers.Select(cust => cust.Age).Max()).First());
+            Console.ReadKey();
+        }
+    }
+}
+
+========================================================================================================
+===========================================simple class inside class====================================
+public class SalesBill
+    {
+        public Customer customer { get; set; }
+
+        public List<Product> products { get; set; }
+
+        public int TotalAmout 
+        { 
+            get
+            {
+                int amount = 0;
+                foreach (var product in products)
+                {
+                    amount += product.Rate;
+                }
+
+                return amount;
+            }
+        }
+
+        public override string ToString()
+        {
+            string billData = customer.ToString() + "\n";
+            billData += "============================================\n";
+            foreach (Product p in products)
+            {
+                billData += p.ToString() + "\n";
+            }
+            billData += "--------------------------------------------\n";
+            billData += "Total Bill Amount : " +  TotalAmout + "\n";
+            billData += "============================================\n";
+
+            return billData;
+        }
+    }
+==============================================================================
+==================================Generics classroom====================================
+ public class GenClass<X>
+    {
+        X v1;
+        public X v2;
+        public X P1 { get; set; }
+        public void Data(X a)
+        {
+            Console.WriteLine(a);
+        }
+        public X Data1()
+        {
+            return v1;
+        }
+    }
+
+class GenericDemo
+    {
+        static void Main(string[] args)
+        {
+            GenClass<Student> GenInt = new GenClass<Student>();
+            GenInt.v2 = new Student { ID = 1, Name = "ABC", Age = 20 };
+            GenInt.P1 = new Student { ID = 2, Name = "PQR", Age = 22 }; 
+            GenInt.Data(new Student { ID = 3, Name = "XYZ", Age = 25 });
+            Console.WriteLine(GenInt.P1);
+            Console.WriteLine(GenInt.v2);
+            Console.WriteLine(GenInt.Data1());
+
+            Console.WriteLine("====");
+
+            GenInt.P1.Test<int>(33);
+
+            Console.WriteLine("====");
+
+            Student s = new Student { ID = 5, Name = "PQRS", Age = 22 };
+
+            GenInt.P1.Test<Student>(s);
+
+            Console.ReadKey();
+        }
+    }
+
+public class Student
+    {
+        public int ID { get; set; }
+        public string Name { get; set; }
+        public int Age { get; set; }
+
+        //public T Test<T>(T x)
+        //{
+        //    T y = x;
+        //    y = x + 1;
+        //    return y;
+        //}
+
+        public void Test<T>(T x)
+        {
+            Console.WriteLine(x);
+        }
+
+        public override string ToString()
+        {
+            return "ID : " + ID.ToString() + ", Name : " + Name + ", Age : " + Age;
+        }
+    }
+class Program
+    {
+        static void Main1(string[] args)
+        {
+            int x = 20;
+            int y = x++;
+            Console.WriteLine(x);
+            //Console.ReadKey();
+
+            Program p = new Program();
+            
+            Test t = new Test();
+            
+            
+        }
+    }
+
+    class Test : Program
+    {
+        public void TestFun()
+        {
+            Console.WriteLine("Hello to all");
+        }
+    }
+================================================================================
+==========================================generics with interface==================
+namespace IT7FirstConAppCS
+{
+    interface IClassDesign
+    {
+        void Dispaly();
+        string Dispaly(string s);
+    }
+
+    interface IClassDesign <T>
+    {
+        void Dispaly();
+        T Dispaly(T s);
+    }
+
+    interface IClassAType : IClassDesign
+    {
+        void Dispaly(int x);
+        int ChangeValue(int x);
+    }
+
+    interface IClassBType : IClassDesign<int>
+    {
+        void Dispaly(string x);
+        int ChangeValue(int x);
+    }
+
+    interface IClassCType : IClassDesign<string>
+    {
+        void Dispaly(int x);
+        int ChangeValue(int x);
+    }
+}
+
+
+class GenericInterfaceDemo
+    {
+        static void Main1(string[] args)
+        {
+            //DataValues
+            IClassDesign DV = new DataValues();
+            DV.Dispaly();
+            DV.Dispaly("Hello to all");
+
+            Console.ReadKey();
+        }
+
+        static void Main(string[] args)
+        {
+            //DataValueGen
+            IClassDesign<int> DVG = new DataValueGen();
+            DVG.Dispaly();
+            Console.WriteLine(DVG.Dispaly(5));
+            //Console.WriteLine(DVG.Dispaly("Hello to IT7"));
+            Console.ReadKey();
+        }
+
+    }
+class GenericDemo
+    {
+        static void Main1(string[] args)
+        {
+            GenClass<Student> GenInt = new GenClass<Student>();
+            GenInt.v2 = new Student { ID = 1, Name = "ABC", Age = 20 };
+            GenInt.P1 = new Student { ID = 2, Name = "PQR", Age = 22 }; 
+            GenInt.Data(new Student { ID = 3, Name = "XYZ", Age = 25 });
+            Console.WriteLine(GenInt.P1);
+            Console.WriteLine(GenInt.v2);
+            Console.WriteLine(GenInt.Data1());
+            
+
+            Console.WriteLine("====");
+
+            GenInt.P1.Test<int>(33);
+
+            Console.WriteLine("====");
+
+            Student s = new Student { ID = 5, Name = "PQRS", Age = 22 };
+
+            GenInt.P1.Test<Student>(s);
+
+            Console.WriteLine("-------------------");
+            GenInt.Data(GenInt.v2, 2);
+
+            Console.ReadKey();
+        }
+
+        static void Main2(string[] args)
+        {
+            Student s = new Student { ID = 1, Name = "ABC", Age = 20 };
+            
+            GenericDemo.Display<Student, Student>(s, s);
+
+            GenericDemo.Display<Student, int>(s, 10);
+
+            GenericDemo.Display<float, Student>(20.55f, s);
+
+            Console.ReadKey();
+        }
+
+        public static void Display<A>(A objA)
+        {
+            Console.WriteLine("Dispaly with A type : " + objA);
+        }
+
+        public static void Display<B,C>(B objB, C objC)
+        {
+            Console.WriteLine("Dispaly with B type : " + objB 
+                + " and C type : " + objC );
+        }
+    }
+============================================================================================
+=========================================indexer===========================================
+  class IndexerDemoCs
+    {
+
+        public static void Main()
+        {
+            MyClass myProducts = new MyClass();
+            myProducts.Add(new Product
+            {
+                ProdId = 1,
+                Name = "Computer",
+                Rate = 50000,
+                Description = "My new Computer"
+            });
+            myProducts.Add(new Product
+            {
+                ProdId = 2,
+                Name = "Table",
+                Rate = 12000,
+                Description = "My new Table"
+            });
+            myProducts.Add(new Product
+            {
+                ProdId = 3,
+                Name = "Tablet",
+                Rate = 22000,
+                Description = "Your new Tablet"
+            });
+            myProducts.Add(new Product
+            {
+                ProdId = 4,
+                Name = "Chair",
+                Rate = 5000,
+                Description = "My new Chair"
+            });
+
+            //var selectedProducts = myProducts["my", true];
+            
+            var selectedProducts = myProducts[10000, 30000];
+            
+            foreach (var item in selectedProducts)
+            {
+                Console.WriteLine(item);
+            }
+        }
+    }
+
+    public class MyClass
+    {
+        private List<Product> products = new List<Product>();
+
+        public void Add(Product newProduct)
+        {
+            products.Add(newProduct);
+        }
+
+        public List<Product> this[string s]
+        {
+            get => products.Where(p => p.Name.ToLower().Contains(s.ToLower())).ToList();
+        }
+
+        //public List<Product> this[string s, bool flag]
+        //{
+        //    get
+        //    {
+        //        if (flag)
+        //        {
+        //            return products.Where(p => p.Name.ToLower().Contains(s.ToLower())
+        //            || p.Description.ToLower().Contains(s.ToLower())
+        //            ).ToList();
+        //        }
+        //        else
+        //        return products.Where(p => p.Name.ToLower().Contains(s.ToLower())).ToList();
+        //    }
+        //}
+
+        public List<Product> this[string s, bool flag]
+        {
+            get => flag ? products.Where(p => p.Name.ToLower().Contains(s.ToLower())
+                                || p.Description.ToLower().Contains(s.ToLower())).ToList()
+                        : products.Where(p => p.Name.ToLower().Contains(s.ToLower())).ToList();
+        }
+
+        public List<Product> this[int startRange, int endRange]
+        {
+            get => (from p in products
+                   where p.Rate > startRange
+                   && p.Rate < endRange
+                   select p).ToList();
+        }
+    }
+
+    public class Product
+    {
+        public int ProdId { get; set; }
+        public string Name { get; set; }
+        public int Rate { get; set; }
+        public string Description { get; set; }
+
+        public override string ToString() => "PID = " 
+            + ProdId + " Name = " + Name + " Rate = " 
+            + Rate.ToString() + " Desc = " + Description;
+        
+    }
+=================================================================================================
+=======================================local function=============================================
+class LocalFunctionDemo
+    {
+        private int x;
+        public int DataX 
+        { 
+            get
+            {
+                return x;
+            }
+            set
+            {
+                x = value;
+            }
+        }
+
+        public int DataX1 
+        {
+            get => x;
+            set => x = value; 
+        }
+
+        public static void Main1()
+        {
+            int x = 5;
+            int y = 10;
+
+            int MyAddFun(int a, int b)
+            {
+                return x + y + a + b;
+            }
+
+            int MyAddFun1(int a, int b) => x + y + a + b;
+
+            Console.WriteLine(MyAddFun(5, 10));
+
+            Console.WriteLine(MyAddFun1(15, 20));
+
+        }
+
+
+    }
+================================================================================
+=======================================serialization and deserialization===============
+using System;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+public class SerialTest {
+    public void SerializeNow() {
+        ClassToSerialize c = new ClassToSerialize();
+        File f = new File("temp.dat");
+        Stream s = f.Open(FileMode.Create);
+        BinaryFormatter b = new BinaryFormatter();
+        b.Serialize(s, c);
+        s.Close();
+    }
+    public void DeSerializeNow() {
+        ClassToSerialize c = new ClassToSerialize();
+        File f = new File("temp.dat");
+        Stream s = f.Open(FileMode.Open);
+        BinaryFormatter b = new BinaryFormatter();
+        c = (ClassToSerialize) b.Deserialize(s);
+        Console.WriteLine(c.name);
+        s.Close();
+    }
+    public static void Main(string[] s) {
+        SerialTest st = new SerialTest();
+        st.SerializeNow();
+        st.DeSerializeNow();
+    }
+}
+public class ClassToSerialize {
+    public int age = 100;
+    public string name = "bipin";
+}
+============================================================================================
+=======================================save generics in file================================
+https://www.codeproject.com/Articles/1105754/Generic-Csharp-NET-Object-Save-Load
+https://stackoverflow.com/questions/24247324/saving-a-generic-list
+============================================================================================
+====================================writing in viewbag======================================
+  List<project> emp = new List<project>
+            {
+                new project
+                {
+                    projectId = 1,
+                    projectname = "John",
+                    studentId=null
+                },
+
+            };
+           
+            ViewBag.employee = emp;
+-----------------------------------//cshtml----------------------------------------------
+     @foreach (var employee in ViewBag.employee)
+        {
+            <tr>
+                <td>@employee.projectId</td>
+                <td>@employee.projectname</td>
+                <td>@employee.studentId</td>
+                
+            </tr>
+
+        }
+============================================================================================
+===================================simple controller api=====================================
 public ActionResult Index()
         {
             HttpClient httpClient = new HttpClient();
@@ -1489,30 +2638,5 @@ public ActionResult Index()
         }
 
 
-  @foreach (var employee in ViewBag.employee)
-        {
-            <tr>
-                <td>@employee.projectId</td>
-                <td>@employee.projectname</td>
-                <td>@employee.studentId</td>
-               
-            </tr>
 
-        }
-
- List<project> emp = new List<project>
-            {
-                new project
-                {
-                    projectId = 1,
-                    projectname = "John",
-                    studentId=null
-                },
-
-            };
-
-            ViewBag.employee = emp;
-
-
-
-********************************************************End Radhika****************************************
+************************************************End Radhika*****************************************
